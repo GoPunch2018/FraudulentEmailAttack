@@ -21,12 +21,8 @@ import language_tool_python
 
 from preprocessing import tokenize
 
-"""
-Text Feature Extraction
-"""
 
-
-def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, ngram_range=(2, 2), max_features=None):
+def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, max_features=None):
     """
     Extract TF-IDF features from a series using scikit-learn.
 
@@ -73,7 +69,7 @@ def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, ngr
 
     output = dict();
 
-    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, ngram_range=ngram_range, max_features=max_features)
+    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, max_features=max_features)
 
     tfidf_score_train = tfidf_vec.fit_transform(text_train).toarray()
     tfidf_features_train = pd.DataFrame(tfidf_score_train, columns=tfidf_vec.get_feature_names_out())
@@ -92,6 +88,30 @@ def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, ngr
         output['tfidf_test'] = None
 
     return output
+
+
+def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 3), max_features=None):
+    """
+    Extract TF-IDF features from a series for unsupervised learning using scikit-learn.
+
+    Parameters
+    ----------
+    text_col : pandas.Series of list of str
+        The series that contains the tokenized texts as word lists.
+    max_df, min_df, ngram_range, max_features:
+        Parameters for TfidfVectorizer.
+
+    Returns
+    -------
+    dict
+        A dictionary that contains the vectorizer and the vectorized set.
+    """
+    text_combined = text_col.map(' '.join)
+    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, ngram_range=ngram_range, max_features=max_features)
+    tfidf_score = tfidf_vec.fit_transform(text_combined).toarray()
+    tfidf_features = pd.DataFrame(tfidf_score, columns=tfidf_vec.get_feature_names_out())
+
+    return {'vectorizer': tfidf_vec, 'tfidf_features': tfidf_features}
 
 
 def filter_vocab_words(wordlist, vocabulary):

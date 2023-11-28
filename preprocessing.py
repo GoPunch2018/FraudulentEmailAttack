@@ -6,7 +6,7 @@ learning algorithms.
 import pandas as pd
 import numpy as np
 import re
-
+import string
 from bs4 import BeautifulSoup
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
@@ -19,6 +19,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.stem import PorterStemmer
 
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
@@ -238,6 +239,52 @@ def lemmatize(token_list):
     return lemmatized_list
 
 
+def remove_punctuation(text):
+    """
+    Removes punctuation marks from the input text and fixes stray dots.
+
+    This function takes an input string, removes all punctuation marks from it, and
+    addresses the issue of stray dots. If a line in the input consists only of a dot,
+    it is appended to the previous line containing text, and the line with the dot is
+    removed. Finally, leading and trailing whitespace is stripped from the output.
+
+    Parameters
+    ----------
+    text : str
+        The input string to be sanitized.
+
+    Returns
+    -------
+    str
+        The sanitized string with punctuation marks removed and stray dots fixed.
+    """
+    translator = str.maketrans('', '', string.punctuation)
+    return text.translate(translator)
+
+
+def remove_non_letters_and_extra_spaces(text):
+    """
+    Removes non-letter characters from the input text and fixes extra spaces.
+
+    This function takes an input string, replaces all characters that are not letters
+    (a-z or A-Z) with a space, and then ensures that there are no consecutive spaces
+    in the resulting text. Finally, it returns the cleaned and sanitized text.
+
+    Parameters
+    ----------
+    text : str
+        The input string to be processed.
+
+    Returns
+    -------
+    str
+        The cleaned and sanitized string with non-letter characters removed and
+        extra spaces fixed.
+    """
+    cleaned_text = re.sub("[^a-zA-Z]", " ", text)
+    return " ".join(cleaned_text.split())
+
+
 def sanitize_whitespace(input_string):
     """
     Remove some extra whitespace and fix stray dots.
@@ -290,11 +337,6 @@ def sanitize_addresses(input_string):
     more = re.sub(r'>+', '>', less)
 
     return more
-
-
-"""
-Dataset Processing
-"""
 
 
 def dataset_split(dataset, percent=0.2, keep_index=False):
@@ -440,3 +482,22 @@ def impute_missing(train, test, strategy='mean'):
     test = pd.DataFrame(imp_mean.transform(test), columns=train.columns)
 
     return train, test
+
+
+def word_stemming(text):
+    """
+    This function takes in a string of text and returns the stemmed version of each word in the text.
+
+    Parameters:
+    text (str): The input text that needs stemming.
+
+    Returns:
+    list: A list of stemmed words.
+    """
+    # Initialize the PorterStemmer object
+    porter = PorterStemmer()
+
+    # Apply stemming to each word in the tokenized text
+    stemmed_words = [porter.stem(word) for word in text]
+
+    return stemmed_words

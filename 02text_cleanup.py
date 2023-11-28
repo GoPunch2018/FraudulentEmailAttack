@@ -13,12 +13,16 @@ ling_spam_csv = 'ling_spam.csv'
 enron_csv = 'enron_text_20000.csv'
 # Non Targeted phishing
 nazario_csv = 'nazario_full.csv'
-spam_assassin_csv = 'spam_assassin_all.csv'
+spam_assassin_csv = 'spam_assassin.csv'
 # 1、lingspam
 ling_spam_raw = pd.read_csv(os.path.join(csv_path, ling_spam_csv), dtype={'message': 'object'})
 ling_spam_raw = ling_spam_raw.dropna()
-ling_spam = ling_spam_raw[ling_spam_raw['body'].apply(util.check_empty) == False]
+ling_spam = ling_spam_raw[ling_spam_raw['message'].apply(util.check_empty) == False]
 ling_spam = ling_spam[ling_spam.duplicated(keep='first') == False]
+ling_spam_only_body = ling_spam[['message']].rename(columns={'message': 'body'})
+
+ling_spam_only_body.to_csv(csv_path + 'ling_spam_only_body.csv', index=False)
+
 # 2、enron
 legit_text_small_raw = pd.read_csv(os.path.join(csv_path, enron_csv), index_col=0, dtype={'body': 'object'})
 legit_text_small_raw = legit_text_small_raw.dropna()
@@ -39,37 +43,20 @@ spam_assassin = spam_assassin[spam_assassin['body'].str.contains(
     "This text is part of the internal format of your mail folder, and is not\na real message.") == False]
 spam_assassin = spam_assassin[spam_assassin.duplicated(keep='first') == False]
 
+ling_spam_only_body['class'] = 0
+legit_text_small['class'] = 0
 phishing_text['class'] = 1
 spam_assassin['class'] = 1
 
-legit_text_small = legit_text_small.sample(n=16880, random_state=1746)
-legit_text_small['class'] = 0
+generic_spam = pd.concat([ling_spam_only_body, legit_text_small])
+generic_spam = generic_spam.sample(frac=1, random_state=1746).reset_index(drop=True)
+generic_spam.insert(0, 'id', generic_spam.index)
 
-balanced = pd.concat([phishing_text, legit_text_small])
-balanced = balanced.sample(frac=1, random_state=1746).reset_index(drop=True)
-balanced.insert(0, 'id', balanced.index)
+save_to_csv(generic_spam, csv_path, 'generic_spam.csv')
 
-
-save_to_csv(balanced, csv_path, 'balanced.csv')
-
-# #### 1:10 ratio
-
-# In[21]:
+non_targeted_phishing = pd.concat([phishing_text, spam_assassin])
+non_targeted_phishing = non_targeted_phishing.sample(frac=1, random_state=1746).reset_index(drop=True)
+non_targeted_phishing.insert(0, 'id', non_targeted_phishing.index)
 
 
-legit_text_big = legit_text_big.sample(n=16880, random_state=1746)
-legit_text_big['class'] = 0
-
-# In[22]:
-
-
-imbalanced = pd.concat([phishing_text, legit_text_big])
-imbalanced = imbalanced.sample(frac=1, random_state=1746).reset_index(drop=True)
-imbalanced.insert(0, 'id', imbalanced.index)
-
-# In[23]:
-
-
-save_to_csv(imbalanced, csv_path, 'imbalanced.csv')
-
-# In[23]:
+save_to_csv(non_targeted_phishing, csv_path, 'non_targeted_phishing.csv')
