@@ -59,7 +59,6 @@ phishing_text_raw = phishing_text_raw.dropna()
 
 
 phishing_text = phishing_text_raw[phishing_text_raw['body'].apply(util.check_empty) == False]
-a = phishing_text_raw['body'].apply(util.check_empty) == False
 phishing_text.shape
 
 

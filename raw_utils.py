@@ -374,7 +374,7 @@ def sample_enron_to_mbox(path, amount, mode='number', overwrite=True):
     return os.path.basename(mbox_file)
 
 
-def spam_assassin_to_mbox(directory, output_mbox_file=None, overwrite=True):
+def spam_assassin_to_mbox(directory, overwrite=True):
     """
     Function to create an mbox file from the emails stored in a directory structure.
     :param directory: The root directory containing the email files.
@@ -402,10 +402,7 @@ def spam_assassin_to_mbox(directory, output_mbox_file=None, overwrite=True):
         print("Creating output file", mbox_file)
 
     # 创建 mbox 文件
-    if output_mbox_file is not None:
-        mbox = mailbox.mbox(output_mbox_file)
-    else:
-        mbox = mailbox.mbox(mbox_file)
+    mbox = mailbox.mbox(mbox_file)
     mbox.lock()
     skip_counter = 0
     for root, dirs, files in os.walk(directory):
@@ -416,7 +413,7 @@ def spam_assassin_to_mbox(directory, output_mbox_file=None, overwrite=True):
             file_path = os.path.join(root, file)
             try:
                 # 读取邮件文件内容
-                with open(file_path, 'r', encoding=('utf-8', 'gbk', 'latin1')) as f:
+                with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 # 将内容转换为 email.message.Message 对象
                 msg = eml.message_from_string(content)
@@ -434,6 +431,7 @@ def spam_assassin_to_mbox(directory, output_mbox_file=None, overwrite=True):
     mbox.unlock()
     mbox.close()
     print(mbox_file, "was created successfully.")
+    return os.path.basename(mbox_file)
 
 
 if __name__ == '__main__':

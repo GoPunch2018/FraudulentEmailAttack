@@ -26,7 +26,7 @@ random.seed(1746)
 # Paths
 # cwd = os.getcwd()
 cwd = r"D:\01WorkingDirectory"
-nazario_path = os.path.join(cwd, 'data/phishing/nazario/')
+nazario_path = os.path.join(cwd, 'data/raw/phishing/nazario/')
 enron_path = os.path.join(cwd, 'data/enron_mail_20150507/')
 
 csv_path = os.path.join(cwd, 'data/csv/')

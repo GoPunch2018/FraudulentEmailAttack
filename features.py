@@ -26,7 +26,7 @@ Text Feature Extraction
 """
 
 
-def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, max_features=None):
+def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, ngram_range=(2, 2), max_features=None):
     """
     Extract TF-IDF features from a series using scikit-learn.
 
@@ -73,7 +73,7 @@ def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, max
 
     output = dict();
 
-    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, max_features=max_features)
+    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, ngram_range=ngram_range, max_features=max_features)
 
     tfidf_score_train = tfidf_vec.fit_transform(text_train).toarray()
     tfidf_features_train = pd.DataFrame(tfidf_score_train, columns=tfidf_vec.get_feature_names_out())
