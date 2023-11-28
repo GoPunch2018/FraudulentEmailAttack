@@ -1,0 +1,2 @@
+无法获取数据集spear phishing emails (1370 spear-phishing)。
+如果某天拿到数据集，就放在此文件夹。 (spear phishing emails from Kaggle data source)
