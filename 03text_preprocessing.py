@@ -32,7 +32,6 @@ generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.tokenize)
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.remove_stopwords)
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.word_stemming)
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.lemmatize)
-print(generic_spam_tokens['body'].head())
 # generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(lambda x: ' '.join(x))
 
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.sanitize_whitespace)
