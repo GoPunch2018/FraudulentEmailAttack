@@ -13,58 +13,25 @@ from ast import literal_eval
 cwd = os.getcwd()
 csv_path = os.path.join(cwd, 'data/csv/')
 
-generic_spam_tokens = 'generic_spam.csv'
-non_targeted_spam_tokens = 'non_targeted_phishing.csv'
+generic_spam_tokens = 'generic_spam_tokens.csv'
+non_targeted_tokens = 'non_targeted_tokens.csv'
 
 generic_spam_tokens = pd.read_csv(os.path.join(csv_path, generic_spam_tokens), index_col=0,
                                   converters={'body': literal_eval})
-non_targeted_spam_tokens = pd.read_csv(os.path.join(csv_path, non_targeted_spam_tokens), index_col=0,
+non_targeted_tokens = pd.read_csv(os.path.join(csv_path, non_targeted_tokens), index_col=0,
                                        converters={'body': literal_eval})
 
+tfidf_balanced = util.tfidf_features_unsupervised(generic_spam_tokens['body'], min_df=5, ngram_range=(1, 3),
+                                                  max_features=500)
+W_generic_spam = tfidf_balanced['document-topic']
+H_generic_spam = tfidf_balanced['topic-term']
 
-
-
-tfidf_balanced = util.tfidf_features(generic_spam_tokens['body'], non_targeted_spam_tokens['body'], min_df=5,
-                                     max_features=500)
-
-# In[7]:
-
-
-tfidf_train_balanced = tfidf_balanced['tfidf_train']
-tfidf_test_balanced = tfidf_balanced['tfidf_test']
-tfidf_model_balanced = tfidf_balanced['vectorizer']
-
-# In[8]:
-
-
-tfidf_imbalanced = util.tfidf_features(train_imbalanced_tokens['body'], test_imbalanced_tokens['body'], min_df=5,
-                                       max_features=500)
-
-# In[9]:
-
-
-tfidf_train_imbalanced = tfidf_imbalanced['tfidf_train']
-tfidf_test_imbalanced = tfidf_imbalanced['tfidf_test']
-tfidf_model_imbalanced = tfidf_imbalanced['vectorizer']
-
-# As an example, here is a part of the calcuated matrix for the balanced train set:
-
-# In[10]:
-
-
-tfidf_train_balanced.head()
-
-# ### Word2Vec
-
-# A more advanced technique is **Word Embedding**, which calculates a high-dimensional vector for each word based on the probability distribution of this word appearing before or after another. In other words, words belonging to the same context usually appear close to each other in the corpus, so they will be closer in the vector space as well.<br>
-# The chosen implementation is **Word2Vec**.
-
-# After the word vectors are calculated, the vectors of each word in an email are being averaged, thus resulting in a single vector for each email.
-
-# In[11]:
-
-
-word2vec_balanced = util.word2vec_features(generic_spam_tokens['body'], non_targeted_spam_tokens['body'],
+tfidf_non_targeted = util.tfidf_features_unsupervised(non_targeted_tokens['body'], min_df=5, ngram_range=(1, 3),
+                                                  max_features=500)
+W_non_targeted = tfidf_non_targeted['document-topic']
+H_non_targeted = tfidf_non_targeted['topic-term']
+# 进行到这一步了
+word2vec_balanced = util.word2vec_features(generic_spam_tokens['body'], non_targeted_tokens['body'],
                                            vector_size=100, min_count=5)
 
 # In[12]:

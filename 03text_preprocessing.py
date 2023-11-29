@@ -33,9 +33,10 @@ generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.remove_stop
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.word_stemming)
 generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.lemmatize)
 # generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(lambda x: ' '.join(x))
+generic_spam_tokens = generic_spam_tokens[generic_spam_tokens['body'].astype(bool)]
 
-generic_spam_tokens['body'] = generic_spam_tokens['body'].apply(util.sanitize_whitespace)
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.sanitize_addresses)
+non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.sanitize_whitespace)
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.remove_non_letters_and_extra_spaces)
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.remove_punctuation)
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.tokenize)
@@ -43,6 +44,7 @@ non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.remove_stop
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.word_stemming)
 non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(util.lemmatize)
 # non_targeted_tokens['body'] = non_targeted_tokens['body'].apply(lambda x: ' '.join(x))
+non_targeted_tokens = non_targeted_tokens[non_targeted_tokens['body'].astype(bool)]
 
 save_to_csv(generic_spam_tokens, csv_path, 'generic_spam_tokens.csv')
 

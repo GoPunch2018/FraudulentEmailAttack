@@ -8,11 +8,11 @@ that are based on the writing style (stylometric).
 import pandas as pd
 import numpy as np
 import re
-
+from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectPercentile, chi2
 from gensim.models import Word2Vec
-
+from sklearn.preprocessing import normalize
 from string import punctuation
 # keep it in mind, pip install py-readability-metrics, otherwise this file is null
 from readability import Readability
@@ -106,12 +106,65 @@ def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 
     dict
         A dictionary that contains the vectorizer and the vectorized set.
     """
-    text_combined = text_col.map(' '.join)
-    tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, ngram_range=ngram_range, max_features=max_features)
-    tfidf_score = tfidf_vec.fit_transform(text_combined).toarray()
-    tfidf_features = pd.DataFrame(tfidf_score, columns=tfidf_vec.get_feature_names_out())
+    if all(isinstance(elem, str) for elem in text_col[0]):
+        text_combined = text_col.map(' '.join)
+    else:
+        raise TypeError("The input column must contain lists of strings.")
 
-    return {'vectorizer': tfidf_vec, 'tfidf_features': tfidf_features}
+    # tfidf_vec = TfidfVectorizer(max_df=max_df, min_df=min_df, ngram_range=ngram_range, max_features=max_features)
+    # tfidf_score = tfidf_vec.fit_transform(text_combined).toarray()
+    # tfidf_features = pd.DataFrame(tfidf_score, columns=tfidf_vec.get_feature_names_out())
+
+    tfidf_vectorizer = TfidfVectorizer(max_features=500, ngram_range=(1, 3))
+    tfidf_score = tfidf_vectorizer.fit_transform(text_combined).toarray()
+    tfidf_terms = pd.DataFrame(tfidf_score, columns=tfidf_vectorizer.get_feature_names_out())
+
+    # 设置NMF的参数
+    n_components = 10  # 这是你想要的主题数量
+    init = 'nndsvd'  # 使用NNDSVD作为初始化方法
+    max_iter = 200
+
+    # 创建NMF实例并拟合数据
+    nmf = NMF(n_components=n_components, init=init, max_iter=max_iter)
+    W = nmf.fit_transform(tfidf_terms)  # 文档-主题矩阵
+    H = nmf.components_  # 主题-术语矩阵
+    H = pd.DataFrame(H, columns=tfidf_vectorizer.get_feature_names_out())
+    W_normalized = normalize(W, norm='l1', axis=1)
+    return {"tfidf_vectorizer": tfidf_vectorizer,
+            'document-topic': W_normalized,
+            'topic-term': H, "tdidf_features": tfidf_terms}
+
+
+def get_topics(tfidf_vectorizer, H):
+    # 假设 H_matrix 是您的主题-术语矩阵，形状为 10 x 500
+    # 示例：打印每个主题的前几个关键术语
+    # 假设 feature_names 是包含500个术语的列表
+    feature_names = tfidf_vectorizer.get_feature_names_out()  # 这里应该是您的术语列表
+
+    # 确定每个主题的关键术语
+    # 迭代每一行（每个主题），找出分值最高的10个术语
+    terms = []
+    for index, row in H.iterrows():
+        top_terms_indices = row.argsort()[-10:][::-1]
+        top_terms = [feature_names[i] for i in top_terms_indices]
+        terms.append(top_terms)
+
+    return terms
+
+
+def topic_term(W, H, tfidf_vectorizer, topic_labels=None):
+    W_normalized = normalize(W, norm='l1', axis=1)
+
+    # 主题标签
+    topic_labels = ['Advertisement', 'Financial Gain', 'Information Trap', 'Emotion Arousing', 'Personalization',
+                    'Impersonation', 'Action Enforcing', 'Malicious Attachment']
+
+    # 将主题标签关联到NMF模型的每个主题
+    for i, topic_weights in enumerate(H):
+        top_term_indices = topic_weights.argsort()[-10:][::-1]  # 假设提取每个主题的前10个术语
+        top_terms = [tfidf_vectorizer.get_feature_names_out()[index] for index in top_term_indices]
+        print(f"Topic {i + 1} ({topic_labels[i]}): {', '.join(top_terms)}")
+    pass
 
 
 def filter_vocab_words(wordlist, vocabulary):
