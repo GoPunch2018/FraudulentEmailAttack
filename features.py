@@ -90,7 +90,7 @@ def tfidf_features(text_col_train, text_col_test=None, max_df=1.0, min_df=1, max
     return output
 
 
-def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 3), max_features=None):
+def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 3), topic_number=10, max_features=500):
     """
     Extract TF-IDF features from a series for unsupervised learning using scikit-learn.
 
@@ -115,12 +115,12 @@ def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 
     # tfidf_score = tfidf_vec.fit_transform(text_combined).toarray()
     # tfidf_features = pd.DataFrame(tfidf_score, columns=tfidf_vec.get_feature_names_out())
 
-    tfidf_vectorizer = TfidfVectorizer(max_features=500, ngram_range=(1, 3))
+    tfidf_vectorizer = TfidfVectorizer(max_features=max_features, ngram_range=ngram_range)
     tfidf_score = tfidf_vectorizer.fit_transform(text_combined).toarray()
     tfidf_terms = pd.DataFrame(tfidf_score, columns=tfidf_vectorizer.get_feature_names_out())
 
     # 设置NMF的参数
-    n_components = 10  # 这是你想要的主题数量
+    n_components = topic_number  # 这是你想要的主题数量
     init = 'nndsvd'  # 使用NNDSVD作为初始化方法
     max_iter = 200
 
@@ -131,7 +131,8 @@ def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 
     H = pd.DataFrame(H, columns=tfidf_vectorizer.get_feature_names_out())
     W_normalized = normalize(W, norm='l1', axis=1)
     return {"tfidf_vectorizer": tfidf_vectorizer,
-            'document-topic': W_normalized,
+            'document-topic': W,
+            'nomalized_W': W_normalized,
             'topic-term': H, "tdidf_features": tfidf_terms}
 
 
@@ -165,6 +166,17 @@ def topic_term(W, H, tfidf_vectorizer, topic_labels=None):
         top_terms = [tfidf_vectorizer.get_feature_names_out()[index] for index in top_term_indices]
         print(f"Topic {i + 1} ({topic_labels[i]}): {', '.join(top_terms)}")
     pass
+
+
+def topic_dimension_mapping(topic_number=10, dimension=8):
+    matrix = np.zeros((topic_number, dimension))
+    # 将前8行设置为单位矩阵
+    matrix[:dimension, :dimension] = np.identity(dimension)
+
+    for i in range(dimension, topic_number):
+        matrix[i, 0] = 1
+
+    return matrix
 
 
 def filter_vocab_words(wordlist, vocabulary):

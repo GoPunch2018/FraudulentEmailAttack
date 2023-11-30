@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 
 pd.options.display.max_columns = 250
 pd.options.display.max_colwidth = 160
@@ -19,18 +20,24 @@ non_targeted_tokens = 'non_targeted_tokens.csv'
 generic_spam_tokens = pd.read_csv(os.path.join(csv_path, generic_spam_tokens), index_col=0,
                                   converters={'body': literal_eval})
 non_targeted_tokens = pd.read_csv(os.path.join(csv_path, non_targeted_tokens), index_col=0,
-                                       converters={'body': literal_eval})
+                                  converters={'body': literal_eval})
 
 tfidf_balanced = util.tfidf_features_unsupervised(generic_spam_tokens['body'], min_df=5, ngram_range=(1, 3),
-                                                  max_features=500)
+                                                  max_features=500, topic_number=10)
 W_generic_spam = tfidf_balanced['document-topic']
 H_generic_spam = tfidf_balanced['topic-term']
 
 tfidf_non_targeted = util.tfidf_features_unsupervised(non_targeted_tokens['body'], min_df=5, ngram_range=(1, 3),
-                                                  max_features=500)
+                                                      max_features=500, topic_number=15)
 W_non_targeted = tfidf_non_targeted['document-topic']
 H_non_targeted = tfidf_non_targeted['topic-term']
-# 进行到这一步了
+
+topic_dimension = util.topic_dimension_mapping()
+
+document_dimension = np.dot(W_non_targeted, topic_dimension)
+
+# 将结果转换回 DataFrame （如果需要）
+result_df = pd.DataFrame(document_dimension, columns=['Dimension1', 'Dimension2', ..., 'DimensionN'])
 word2vec_balanced = util.word2vec_features(generic_spam_tokens['body'], non_targeted_tokens['body'],
                                            vector_size=100, min_count=5)
 
