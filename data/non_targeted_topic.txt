@@ -1,0 +1,30 @@
+['account', 'verifi', 'inform', 'confirm', 'suspend', 'verif', 'secur', 'verifi account', 'activ', 'dear']
+['ebay', 'item', 'polici', 'trademark', 'ebay member', 'ebay inc', 'messag', 'question', 'member', 'privaci polici']
+['bank', 'custom', 'region', 'client', 'servic', 'busi', 'form', 'corpor', 'procedur', 'onlin']
+['email', 'messag', 'mail', 'send', 'receiv', 'server', 'address', 'attach', 'plea', 'view']
+['paypal', 'paypal account', 'account', 'log', 'password', 'log paypal', 'log paypal account', 'use paypal', 'assist', 'protect']
+['updat', 'record', 'updat record', 'continu', 'inform', 'onlin', 'account', 'updat account', 'amazon', 'pleas']
+['remov', 'free', 'get', 'click', 'one', 'home', 'rate', 'list', 'go', 'call']
+['nation citi', 'citi', 'nation', 'busi', 'client', 'corpor', 'custom servic', 'form', 'servic', 'mail']
+['usaa', 'secur', 'invest', 'contact', 'privaci', 'account', 'member', 'payment', 'plea', 'sign']
+['account', 'limit', 'access', 'account access', 'restor', 'secur', 'inconveni', 'understand', 'review', 'protect']
+['font', 'px', 'td', 'br', 'tr', 'size', 'style', 'width', 'border', 'color']
+['de', 'la', 'request', 'die', 'client', 'activ', 'make', 'data', 'server', 'email']
+['chase', 'onlin', 'bank', 'custom', 'part', 'co', 'servic', 'onlin bank', 'secur', 'ask']
+['credit', 'credit union', 'union', 'feder', 'card', 'inform', 'credit card', 'nation', 'onlin', 'servic']
+['upgrad', 'mailbox', 'email', 'mail', 'free', 'data', 'server', 'space', 'full', 'kindli']
+主题：账户验证和安全
+主题：eBay交易和政策
+主题：银行和在线客户服务
+主题：电子邮件通信和服务器
+主题：PayPal账户和安全
+主题：在线账户更新和信息
+主题：订阅和广告移除
+主题：国家和城市商业服务
+主题：USAA账户和安全
+主题：账户访问限制和恢复
+主题：HTML邮件格式和样式
+主题：数据请求和服务器联系
+主题：Chase银行和在线服务
+主题：信用卡和在线信用联盟服务
+主题：邮箱升级和存储空间

@@ -122,7 +122,7 @@ def tfidf_features_unsupervised(text_col, max_df=1.0, min_df=1, ngram_range=(1, 
     # 设置NMF的参数
     n_components = topic_number  # 这是你想要的主题数量
     init = 'nndsvd'  # 使用NNDSVD作为初始化方法
-    max_iter = 200
+    max_iter = 300
 
     # 创建NMF实例并拟合数据
     nmf = NMF(n_components=n_components, init=init, max_iter=max_iter)
@@ -168,15 +168,95 @@ def topic_term(W, H, tfidf_vectorizer, topic_labels=None):
     pass
 
 
-def topic_dimension_mapping(topic_number=10, dimension=8):
-    matrix = np.zeros((topic_number, dimension))
-    # 将前8行设置为单位矩阵
-    matrix[:dimension, :dimension] = np.identity(dimension)
+def enron_topic_dimension_mapping(topic_number=10, dimension=8):
+    # 创建主题-维度映射矩阵的数据
+    data = {
+        "Advertisement": [0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, 0.2, 0.3, 0.1],
+        "Financial Gain": [0.4, 0.2, 0.1, 0.1, 0.3, 0.5, 0.2, 0.1, 0.7, 0.1],
+        "Information Trap": [0.1, 0.5, 0.4, 0.3, 0.2, 0.3, 0.6, 0.3, 0.2, 0.2],
+        "Emotion Arousing": [0.1, 0.2, 0.2, 0.1, 0.1, 0.2, 0.3, 0.1, 0.2, 0.1],
+        "Personalization": [0.3, 0.6, 0.4, 0.5, 0.2, 0.7, 0.4, 0.3, 0.3, 0.6],
+        "Impersonation": [0.2, 0.5, 0.3, 0.2, 0.4, 0.6, 0.7, 0.2, 0.2, 0.2],
+        "Action Enforcing": [0.3, 0.3, 0.4, 0.6, 0.3, 0.5, 0.2, 0.4, 0.5, 0.7],
+        "Malicious Attachment": [0.1, 0.2, 0.1, 0.1, 0.8, 0.2, 0.3, 0.2, 0.1, 0.1],
+    }
 
-    for i in range(dimension, topic_number):
-        matrix[i, 0] = 1
+    # 主题列表
+    topics = [
+        "能源市场",
+        "电子邮件通信",
+        "邮件发送时间",
+        "日程安排",
+        "文件附件",
+        "工作沟通",
+        "邮件机密性",
+        "传真通信",
+        "Enron公司",
+        "会议安排"
+    ]
 
-    return matrix
+    # 创建 DataFrame
+    topic_dimension_matrix = pd.DataFrame(data, index=topics)
+
+    return topic_dimension_matrix
+
+
+def nazario_topic_dimension_mapping():
+    # 定义主题
+    topics = [
+        "账户验证和安全",
+        "eBay交易和政策",
+        "银行和在线客户服务",
+        "电子邮件通信和服务器",
+        "PayPal账户和安全",
+        "在线账户更新和信息",
+        "订阅和广告移除",
+        "国家和城市商业服务",
+        "USAA账户和安全",
+        "账户访问限制和恢复",
+        "HTML邮件格式和样式",
+        "数据请求和服务器联系",
+        "Chase银行和在线服务",
+        "信用卡和在线信用联盟服务",
+        "邮箱升级和存储空间"
+    ]
+
+    # 定义维度
+    dimensions = [
+        "Advertisement",
+        "Financial Gain",
+        "Information Trap",
+        "Emotion Arousing",
+        "Personalization",
+        "Impersonation",
+        "Action Enforcing",
+        "Malicious Attachment"
+    ]
+
+    # 定义主题与维度的关系数值
+    topic_dimension_values = [
+        [0.2, 0.4, 0.3, 0.1, 0.3, 0.2, 0.1, 0.1],  # 账户验证和安全
+        [0.6, 0.2, 0.5, 0.1, 0.2, 0.1, 0.4, 0.1],  # eBay交易和政策
+        [0.3, 0.5, 0.4, 0.2, 0.3, 0.2, 0.1, 0.2],  # 银行和在线客户服务
+        [0.1, 0.2, 0.6, 0.1, 0.4, 0.3, 0.1, 0.5],  # 电子邮件通信和服务器
+        [0.2, 0.6, 0.3, 0.2, 0.3, 0.1, 0.2, 0.2],  # PayPal账户和安全
+        [0.1, 0.4, 0.5, 0.1, 0.3, 0.2, 0.3, 0.1],  # 在线账户更新和信息
+        [0.7, 0.1, 0.2, 0.2, 0.2, 0.1, 0.1, 0.1],  # 订阅和广告移除
+        [0.3, 0.3, 0.3, 0.3, 0.4, 0.2, 0.1, 0.1],  # 国家和城市商业服务
+        [0.1, 0.5, 0.4, 0.2, 0.2, 0.3, 0.2, 0.1],  # USAA账户和安全
+        [0.2, 0.3, 0.5, 0.2, 0.3, 0.4, 0.1, 0.2],  # 账户访问限制和恢复
+        [0.1, 0.2, 0.1, 0.5, 0.4, 0.1, 0.3, 0.2],  # HTML邮件格式和样式
+        [0.2, 0.3, 0.6, 0.1, 0.2, 0.5, 0.1, 0.3],  # 数据请求和服务器联系
+        [0.1, 0.7, 0.3, 0.2, 0.1, 0.2, 0.4, 0.1],  # Chase银行和在线服务
+        [0.1, 0.8, 0.2, 0.1, 0.1, 0.1, 0.2, 0.1],  # 信用卡和在线信用联盟服务
+        [0.2, 0.1, 0.4, 0.3, 0.5, 0.1, 0.2, 0.3]  # 邮箱升级和存储空间
+    ]
+
+    # 创建DataFrame
+    topic_dimension_df = pd.DataFrame(topic_dimension_values, index=topics, columns=dimensions)
+
+    # 显示矩阵
+    return topic_dimension_df
 
 
 def filter_vocab_words(wordlist, vocabulary):

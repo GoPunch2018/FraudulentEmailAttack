@@ -16,12 +16,14 @@ nazario_csv = 'nazario_text.csv'
 spam_assassin_csv = 'spam_assassin_text.csv'
 # 1、lingspam
 ling_spam_raw = pd.read_csv(os.path.join(csv_path, ling_spam_csv), dtype={'message': 'object'})
+ling_spam_raw = ling_spam_raw[ling_spam_raw['label'] == 1]
+ling_spam_raw.drop('subject', axis=1, inplace=True)
 ling_spam_raw = ling_spam_raw.dropna()
 ling_spam = ling_spam_raw[ling_spam_raw['message'].apply(util.check_empty) == False]
 ling_spam = ling_spam[ling_spam.duplicated(keep='first') == False]
 ling_spam = ling_spam[['message']].rename(columns={'message': 'body'})
 
-ling_spam.to_csv(csv_path + 'ling_spam_text.csv', index=False)
+ling_spam.to_csv(csv_path + 'ling_spam_text.csv', index=True)
 
 # 2、enron
 enron_text_raw = pd.read_csv(os.path.join(csv_path, enron_csv), index_col=0, dtype={'body': 'object'})
@@ -51,12 +53,12 @@ spam_assassin['class'] = 1
 generic_spam = pd.concat([ling_spam, enron_text])
 generic_spam = generic_spam.sample(frac=1, random_state=1746).reset_index(drop=True)
 generic_spam.insert(0, 'id', generic_spam.index)
-
+save_to_csv(enron_text, csv_path, 'enron_prepro.csv')
 save_to_csv(generic_spam, csv_path, 'generic_spam.csv')
 
 non_targeted_phishing = pd.concat([nazario_text, spam_assassin])
 non_targeted_phishing = non_targeted_phishing.sample(frac=1, random_state=1746).reset_index(drop=True)
 non_targeted_phishing.insert(0, 'id', non_targeted_phishing.index)
 
-
 save_to_csv(non_targeted_phishing, csv_path, 'non_targeted_phishing.csv')
+save_to_csv(nazario_text, csv_path, 'nazario_prepro.csv')

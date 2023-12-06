@@ -335,9 +335,28 @@ def sanitize_addresses(input_string):
     """
     less = re.sub(r'<+', '<', input_string)
     more = re.sub(r'>+', '>', less)
+    more = re.sub(r'<emailaddress>', '', more)
+    more = re.sub(r'[Ee]nron', '', more)
 
     return more
 
+def sanitize_url(input_string):
+    """
+    Remove extra special characters from addresses.
+
+    Parameters
+    ----------
+    input_string : str
+        The string to be sanitized.
+
+    Returns
+    -------
+    str
+        The sanitized string.
+    """
+    more = re.sub(r'urladdress', '', input_string)
+
+    return more
 
 def dataset_split(dataset, percent=0.2, keep_index=False):
     """

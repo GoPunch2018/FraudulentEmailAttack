@@ -14,11 +14,11 @@ ling_spam_path = os.path.join(cwd, 'data/LingSpam')
 enron_path = os.path.join(cwd, 'data/enron_mail_20150507/')
 # Non Targeted phishing
 nazario_path = os.path.join(cwd, 'data/nazario/')
-spam_assassin_path = os.path.join(cwd, 'data/SpamAssassin')
+spam_assassin_path = os.path.join(cwd, 'data/SpamAssassin/spam_2')
 
 csv_path = os.path.join(cwd, 'data/csv/')
-# 1、处理lingspam数据，使其成为  #,body 格式的csv，但是ling_spam已经拥有了index,message,label
-# 的格式，先跳过，后面再处理
+# 1、处理lingspam数据，ling_spam已经拥有了index,message,label
+# 的格式，我们读取label为1的message（钓鱼邮件）就可以
 # 2、处理enron数据集，该数据集拥有46000多封邮件，数据量太大，暂时抽取2000或者20000封，形成我们的数据集
 # 最终使用enron_text_20000.csv
 filename = util.sample_enron_to_mbox(enron_path, 46502)

@@ -14,186 +14,49 @@ from ast import literal_eval
 cwd = os.getcwd()
 csv_path = os.path.join(cwd, 'data/csv/')
 
-generic_spam_tokens = 'generic_spam_tokens.csv'
-non_targeted_tokens = 'non_targeted_tokens.csv'
-
+# generic_spam_tokens = 'generic_spam_tokens.csv'
+# non_targeted_tokens = 'non_targeted_tokens.csv'
+generic_spam_tokens = 'enron_tokens.csv'
+non_targeted_tokens = 'nazario_tokens.csv'
 generic_spam_tokens = pd.read_csv(os.path.join(csv_path, generic_spam_tokens), index_col=0,
                                   converters={'body': literal_eval})
 non_targeted_tokens = pd.read_csv(os.path.join(csv_path, non_targeted_tokens), index_col=0,
                                   converters={'body': literal_eval})
 
-tfidf_balanced = util.tfidf_features_unsupervised(generic_spam_tokens['body'], min_df=5, ngram_range=(1, 3),
+tfidf_balanced = util.tfidf_features_unsupervised(generic_spam_tokens['body'], min_df=5, ngram_range=(2, 3),
                                                   max_features=500, topic_number=10)
 W_generic_spam = tfidf_balanced['document-topic']
+W_generic_spam = pd.DataFrame(W_generic_spam)
+W_generic_spam_max = W_generic_spam.apply(lambda x: (x == x.max()), axis=1).astype(int)
 H_generic_spam = tfidf_balanced['topic-term']
+tfidf_vectorizer_ge = tfidf_balanced['tfidf_vectorizer']
+a = util.get_topics(tfidf_vectorizer_ge, H_generic_spam)
+with open('data/generic_spam_topic.txt', 'w') as f:
+    for sublist in a:
+        # 将每个子列表转换为字符串，然后写入文件
+        f.write(str(sublist) + '\n')
+topic_dimension = util.enron_topic_dimension_mapping()
+document_dimension = np.dot(W_generic_spam, topic_dimension)
+document_dimension[document_dimension < 0.01] = 0
 
-tfidf_non_targeted = util.tfidf_features_unsupervised(non_targeted_tokens['body'], min_df=5, ngram_range=(1, 3),
+result_df = pd.DataFrame(document_dimension)
+save_to_csv(result_df, csv_path, 'gs_document-dimension.csv')
+tfidf_non_targeted = util.tfidf_features_unsupervised(non_targeted_tokens['body'], min_df=5, ngram_range=(2, 3),
                                                       max_features=500, topic_number=15)
 W_non_targeted = tfidf_non_targeted['document-topic']
+W_non_targeted = pd.DataFrame(W_non_targeted)
+W_generic_spam_max = W_generic_spam.apply(lambda x: (x == x.max()), axis=1).astype(int)
 H_non_targeted = tfidf_non_targeted['topic-term']
-
-topic_dimension = util.topic_dimension_mapping()
-
+tfidf_vectorizer_non = tfidf_non_targeted['tfidf_vectorizer']
+b = util.get_topics(tfidf_vectorizer_non, H_non_targeted)
+with open('data/non_targeted_topic.txt', 'w') as f:
+    for sublist in b:
+        # 将每个子列表转换为字符串，然后写入文件
+        f.write(str(sublist) + '\n')
+topic_dimension = util.nazario_topic_dimension_mapping()
 document_dimension = np.dot(W_non_targeted, topic_dimension)
+document_dimension[document_dimension < 0.01] = 0
 
-# 将结果转换回 DataFrame （如果需要）
-result_df = pd.DataFrame(document_dimension, columns=['Dimension1', 'Dimension2', ..., 'DimensionN'])
-word2vec_balanced = util.word2vec_features(generic_spam_tokens['body'], non_targeted_tokens['body'],
-                                           vector_size=100, min_count=5)
 
-# In[12]:
-
-
-word2vec_train_balanced = word2vec_balanced['word2vec_train']
-word2vec_test_balanced = word2vec_balanced['word2vec_test']
-word2vec_model_balanced = word2vec_balanced['vectorizer']
-
-# In[13]:
-
-
-word2vec_imbalanced = util.word2vec_features(train_imbalanced_tokens['body'], test_imbalanced_tokens['body'],
-                                             vector_size=100, min_count=5)
-
-# In[14]:
-
-
-word2vec_train_imbalanced = word2vec_imbalanced['word2vec_train']
-word2vec_test_imbalanced = word2vec_imbalanced['word2vec_test']
-word2vec_model_imbalanced = word2vec_imbalanced['vectorizer']
-
-# The resulting feature sets are like the following:
-
-# In[15]:
-
-
-word2vec_train_balanced.head()
-
-# It should be noted that in this case, the columns do not provide information similar to how a tf-idf column corresponds to one word. This representation is purely for convenience and consistency, it won't matter during the prediction step.
-
-# # Feature Selection
-
-# In order to further reduce the dimensions of the feature matrix, the number of selected features will be halved using the top features according to the **chi-squared** feature selection method.
-
-# ## Vectorization Features
-
-# ### TF-IDF
-
-# In[16]:
-
-
-selected_tfidf_balanced = util.chi2_feature_selection(tfidf_train_balanced, generic_spam_tokens['class'],
-                                                      tfidf_test_balanced, percentile=50)
-
-# In[17]:
-
-
-tfidf_sel_train_balanced = selected_tfidf_balanced['features_train']
-tfidf_sel_test_balanced = selected_tfidf_balanced['features_test']
-tfidf_sel_model_balanced = selected_tfidf_balanced['selector']
-
-# In[18]:
-
-
-selected_tfidf_imbalanced = util.chi2_feature_selection(tfidf_train_imbalanced, train_imbalanced_tokens['class'],
-                                                        tfidf_test_imbalanced, percentile=50)
-
-# In[19]:
-
-
-tfidf_sel_train_imbalanced = selected_tfidf_imbalanced['features_train']
-tfidf_sel_test_imbalanced = selected_tfidf_imbalanced['features_test']
-tfidf_sel_model_imbalanced = selected_tfidf_imbalanced['selector']
-
-# The now-reduced train set:
-
-# In[20]:
-
-
-tfidf_sel_train_balanced.head()
-
-# # Final Dataset Creation
-
-# Before using the features for classification with the machine learning algorithms, it is best to tidy up the datasets and keep them consistent by concatenating the features, the id and the class columns in the same DataFrame.
-
-# In[21]:
-
-
-column_names = ['email_class', 'email_id']  # column names changed in case the word class or id appear in the token list
-
-# ### TF-IDF
-
-# In[22]:
-
-
-final_tfidf_train_balanced = dataset_add_columns(tfidf_sel_train_balanced,
-                                                 [generic_spam_tokens['class'], generic_spam_tokens['id']],
-                                                 column_names)
-final_tfidf_test_balanced = dataset_add_columns(tfidf_sel_test_balanced,
-                                                [non_targeted_spam_tokens['class'], non_targeted_spam_tokens['id']],
-                                                column_names)
-
-# In[23]:
-
-
-final_tfidf_train_imbalanced = dataset_add_columns(tfidf_sel_train_imbalanced,
-                                                   [train_imbalanced_tokens['class'], train_imbalanced_tokens['id']],
-                                                   column_names)
-final_tfidf_test_imbalanced = dataset_add_columns(tfidf_sel_test_imbalanced,
-                                                  [test_imbalanced_tokens['class'], test_imbalanced_tokens['id']],
-                                                  column_names)
-
-# Looking into one of the previously explored examples:
-
-# In[24]:
-
-
-final_tfidf_train_balanced[final_tfidf_train_balanced['email_id'] == 6]
-
-# The words that appear more in the email have a bigger score, while the words that don't appear at all have a score of zero.
-
-# ### Word2Vec
-
-# In[25]:
-
-
-final_word2vec_train_balanced = dataset_add_columns(word2vec_train_balanced,
-                                                    [generic_spam_tokens['class'], generic_spam_tokens['id']],
-                                                    column_names)
-final_word2vec_test_balanced = dataset_add_columns(word2vec_test_balanced,
-                                                   [non_targeted_spam_tokens['class'], non_targeted_spam_tokens['id']],
-                                                   column_names)
-
-# In[26]:
-
-
-final_word2vec_train_imbalanced = dataset_add_columns(word2vec_train_imbalanced,
-                                                      [train_imbalanced_tokens['class'], train_imbalanced_tokens['id']],
-                                                      column_names)
-final_word2vec_test_imbalanced = dataset_add_columns(word2vec_test_imbalanced,
-                                                     [test_imbalanced_tokens['class'], test_imbalanced_tokens['id']],
-                                                     column_names)
-
-# In[27]:
-
-
-final_tfidf_train_balanced.head()
-
-# ### Saving the Results
-
-# In[28]:
-
-
-save_to_csv(final_tfidf_train_balanced, csv_path, 'tfidf_chi2_train_balanced.csv')
-save_to_csv(final_tfidf_test_balanced, csv_path, 'tfidf_chi2_test_balanced.csv')
-
-save_to_csv(final_tfidf_train_imbalanced, csv_path, 'tfidf_chi2_train_imbalanced.csv')
-save_to_csv(final_tfidf_test_imbalanced, csv_path, 'tfidf_chi2_test_imbalanced.csv')
-
-# In[29]:
-
-
-save_to_csv(final_word2vec_train_balanced, csv_path, 'word2vec_train_balanced.csv')
-save_to_csv(final_word2vec_test_balanced, csv_path, 'word2vec_test_balanced.csv')
-
-save_to_csv(final_word2vec_train_imbalanced, csv_path, 'word2vec_train_imbalanced.csv')
-save_to_csv(final_word2vec_test_imbalanced, csv_path, 'word2vec_test_imbalanced.csv')
+result_df = pd.DataFrame(document_dimension)
+save_to_csv(result_df, csv_path, 'nts_document-dimension.csv')
